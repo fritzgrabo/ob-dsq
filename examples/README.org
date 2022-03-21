@@ -1,0 +1,205 @@
+* Getting started
+
+#+begin_src org
+,#+begin_src dsq :input people.json
+SELECT * FROM {}
+,#+end_src
+
+#+RESULTS:
+| id | name  |
+|----+-------|
+|  1 | Alice |
+|  2 | Bob   |
+#+end_src
+
+* Variable expansion
+
+#+begin_src org
+,#+begin_src dsq :input people.json :var name="Alice"
+SELECT * FROM {} WHERE name = '$name'
+,#+end_src
+
+#+RESULTS:
+| id | name  |
+|----+-------|
+|  1 | Alice |
+#+end_src
+
+* Header and Hlines arguments
+
+#+begin_src org
+,#+begin_src dsq :input people.json :header no
+SELECT * FROM {}
+,#+end_src
+
+#+RESULTS:
+| 1 | Alice |
+| 2 | Bob   |
+#+end_src
+
+#+begin_src org
+,#+begin_src dsq :input people.json :hlines yes
+SELECT * FROM {}
+,#+end_src
+
+#+RESULTS:
+| id | name  |
+|----+-------|
+|  1 | Alice |
+|----+-------|
+|  2 | Bob   |
+#+end_src
+
+* Result types and formats
+
+See https://orgmode.org/manual/Results-of-Evaluation.html for details.
+
+#+begin_src org
+,#+begin_src dsq :input people.json :results list
+SELECT * FROM {}
+,#+end_src
+
+#+RESULTS:
+- ("id" "name")
+- (1 "Alice")
+- (2 "Bob")
+#+end_src
+
+#+begin_src org
+,#+begin_src dsq :input people.json :results verbatim code
+SELECT * FROM {}
+,#+end_src
+
+#+RESULTS:
+,#+begin_src dsq
+[{"id":1,"name":"Alice"},
+{"id":2,"name":"Bob"}]
+,#+end_src
+#+end_src
+
+* Querying multiple sources (files, with varying data types)
+
+#+begin_src org
+,#+begin_src dsq :input people.json languages.csv
+SELECT people.name AS name, languages.name AS language
+FROM {0} people
+INNER JOIN {1} languages ON  people.id = languages.person_id
+,#+end_src
+
+#+RESULTS:
+| name  | language |
+|-------+----------|
+| Alice | Ruby     |
+| Alice | Elisp    |
+| Bob   | Python   |
+#+end_src
+
+* Querying Org references (in local or other files)
+
+#+begin_src org
+#+name: colors
+| person_id | name  |
+|-----------+-------|
+|         1 | Blue  |
+|         2 | Red   |
+|         2 | Green |
+
+,#+begin_src dsq :input colors
+SELECT name FROM {}
+,#+end_src
+
+#+RESULTS:
+| name  |
+|-------|
+| Blue  |
+| Red   |
+| Green |
+#+end_src
+
+#+begin_src org
+,#+begin_src dsq :input countries.org:countries
+SELECT name FROM {}
+,#+end_src
+
+#+RESULTS:
+| name        |
+|-------------|
+| Austria     |
+| New Zealand |
+#+end_src
+
+#+begin_src org
+,#+begin_src dsq :input people.json colors countries.org:countries
+SELECT people.name AS name, colors.name AS color, countries.name AS country
+FROM {0} people
+INNER JOIN {1} colors ON  people.id = colors.person_id
+INNER JOIN {2} countries ON  people.id = countries.person_id
+,#+end_src
+
+#+RESULTS:
+| name  | color | country     |
+|-------+-------+-------------|
+| Alice | Blue  | Austria     |
+| Bob   | Red   | New Zealand |
+| Bob   | Green | New Zealand |
+#+end_src
+
+* Querying data with irregular attributes
+
+Note SQLite's [[https://sqlite.org/flextypegood.html][flexible typing]] and how ~null~ and ~false~ values are rendered by default.
+
+#+begin_src org
+,#+begin_src dsq :input irregular.json
+SELECT * FROM {}
+,#+end_src
+
+#+RESULTS:
+|  id | name  | newsletter | phone          |
+|-----+-------+------------+----------------|
+| 1.0 | Alice | false      | nil            |
+| 2.0 | Bob   | nil        | 1-123-123-1234 |
+#+end_src
+
+The rendering of ~null~ and ~false~ values can be customized.
+
+#+begin_src org
+,#+begin_src dsq :input irregular.json :false-value "nope" :null-value "?"
+SELECT * FROM {}
+,#+end_src
+
+#+RESULTS:
+|  id | name  | newsletter | phone          |
+|-----+-------+------------+----------------|
+| 1.0 | Alice | nope       | ?              |
+| 2.0 | Bob   | ?          | 1-123-123-1234 |
+#+end_src
+
+* Querying results of Org source blocks
+
+Because why not?
+
+#+begin_src org
+#+name: comments
+,#+begin_src shell :results verbatim
+curl https://jsonplaceholder.typicode.com/comments
+,#+end_src
+
+,#+begin_src dsq :input comments
+SELECT
+    email,
+    substr(name, 0, 32) AS name
+FROM {}
+WHERE email LIKE 'f%'
+ORDER BY email
+LIMIT 5
+,#+end_src
+
+#+RESULTS:
+| email                         | name                            |
+|-------------------------------+---------------------------------|
+| Fanny@danial.com              | deleniti facere tempore et pers |
+| Faustino.Keeling@morris.co.uk | rerum voluptate dolor           |
+| Felton_Huel@terrell.biz       | ratione architecto in est volup |
+| Ferne_Bogan@angus.info        | dicta deserunt tempore          |
+| Francesco.Gleason@nella.us    | doloribus quibusdam molestiae a |
+#+end_src

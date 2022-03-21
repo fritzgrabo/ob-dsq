@@ -1,0 +1,9 @@
+This is an Org file with a named JSON quote.
+
+#+name: countries
+#+begin_quote json
+[
+  { "person_id": 1, "name": "Austria" },
+  { "person_id": 2, "name": "New Zealand" }
+]
+#+end_quote

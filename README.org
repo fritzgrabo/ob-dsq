@@ -1,0 +1,30 @@
+* ob-dsq.el
+
+Babel functions for the [[https://github.com/multiprocessio/dsq][dsq CLI tool]] by [[https://multiprocess.io][Multiprocess Labs.]] :heart:
+
+~dsq~ is a command-line tool for running SQL queries against JSON, CSV,
+Excel, Parquet, and more.
+
+This package adds Org tables, Org quotes and Org source block results to
+this list.
+
+* Installation
+
+Pending: If you use MELPA, an easy way to install this package is via
+=package-install=. Alternatively, download =ob-dsq.el=, put it in your
+=load-path= and =require= it.
+
+If you use both MELPA and =use-package=, you can use this, too:
+
+#+begin_src emacs-lisp
+(use-package ob-dsq
+  :ensure)
+#+end_src
+
+* Screenshot
+
+An SQL query that spans an Org table and a JSON file.
+
+[[screenshots/screenshot.png]]
+
+See the [[examples][examples]] directory for a lot more!
