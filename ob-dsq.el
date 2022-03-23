@@ -219,7 +219,7 @@ Otherwise, they'll be deleted when Emacs exits.")
 (defun org-babel-dsq--detect-format-from-content-fragment (fragment)
   "Detect format of content FRAGMENT."
   (cond
-   ((string-match "\\`\\(^[[:space:]]*\\(#.*\\)?\n\\)*[[:space:]]*\\[" fragment) "json")
+   ((string-match "\\`\\(^[[:space:]]*\\(#.*\\)?\n\\)*[[:space:]]*[{\\[]" fragment) "json")
    ((string-match "\\`\\(^[[:space:]]*\n\\)*[^\n]*," fragment) "csv")))
 
 (defun org-babel-dsq--file-arg-from-input (input)
