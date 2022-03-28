@@ -1,4 +1,10 @@
-* Getting started
+* Examples
+** Getting started
+
+~dsq~ source code blocks use the custom ~:input~ [[https://orgmode.org/manual/Using-Header-Arguments.html][header argument]] to specify
+one or more data sources to query. Here's a basic example that queries a
+list of people in a file called ~people.json~. Results are formatted as a
+table with a header row by default (see below for other options).
 
 #+begin_src dsq :input people.json
 SELECT * FROM {}
@@ -10,7 +16,12 @@ SELECT * FROM {}
 |  1 | Alice |
 |  2 | Bob   |
 
-* Variable expansion
+** Variable expansion
+
+[[https://orgmode.org/manual/Environment-of-a-Code-Block.html][Arguments]] can be passed to the source code block via ~:var FOO=BAR~ as
+usual. ~dsq~ source code blocks replace occurrences of ~$FOO~ with ~BAR~
+before its evaluation. For now, only literal values may be assigned to
+variables.
 
 #+begin_src dsq :input people.json :var name="Alice"
 SELECT * FROM {} WHERE name = '$name'
@@ -21,7 +32,11 @@ SELECT * FROM {} WHERE name = '$name'
 |----+-------|
 |  1 | Alice |
 
-* Header and Hlines arguments
+** ~:header~ and ~:hlines~ header arguments
+
+Use ~:header yes~ (default) to include a header row in table results. Use
+any other value to render the result without a header. This can be
+useful for result types other than ~table~ (see below for other options).
 
 #+begin_src dsq :input people.json :header no
 SELECT * FROM {}
@@ -30,6 +45,11 @@ SELECT * FROM {}
 #+RESULTS:
 | 1 | Alice |
 | 2 | Bob   |
+#+end_src
+
+Use ~:hlines yes~ to include horizontal lines between rows in table
+results. Use any other value to render the result without horizontal
+rows (default).
 
 #+begin_src dsq :input people.json :hlines yes
 SELECT * FROM {}
@@ -42,9 +62,11 @@ SELECT * FROM {}
 |----+-------|
 |  2 | Bob   |
 
-* Result types and formats
+** Result types and formats
 
-See https://orgmode.org/manual/Results-of-Evaluation.html for details.
+Org supports [[https://orgmode.org/manual/Results-of-Evaluation.html][a wide range of options]] to customize the formatting of the
+results of a source code block execution. Here are two quick examples;
+please see the docs for more details.
 
 #+begin_src dsq :input people.json :results list
 SELECT * FROM {}
@@ -65,7 +87,11 @@ SELECT * FROM {}
 {"id":2,"name":"Bob"}]
 #+end_src
 
-* Querying multiple sources (multiple files, with varying data types)
+** Querying multiple sources (files, with varying data types)
+
+The ~:input~ header argument accepts one or more data sources. Here's an
+example that runs a query across two input files with varying data types
+(JSON and CSV).
 
 #+begin_src dsq :input people.json languages.csv
 SELECT people.name AS name, languages.name AS language
@@ -80,7 +106,12 @@ INNER JOIN {1} languages ON  people.id = languages.person_id
 | Alice | Elisp    |
 | Bob   | Python   |
 
-* Querying Org references (in local or other files)
+** Querying Org references (in local or other files)
+
+Besides regular files, and similar to [[https://orgmode.org/manual/Environment-of-a-Code-Block.html][the ~:var~ header argument]], the
+~:input~ header argument also accepts references to Org tables, Org
+quotes, Org source blocks, etc. Here's an example that runs a query on
+an Org table named ~colors~.
 
 #+name: colors
 | person_id | name  |
@@ -100,6 +131,8 @@ SELECT name FROM {}
 | Red   |
 | Green |
 
+References may also be located in other files.
+
 #+begin_src dsq :input countries.org:countries
 SELECT name FROM {}
 #+end_src
@@ -109,6 +142,10 @@ SELECT name FROM {}
 |-------------|
 | Austria     |
 | New Zealand |
+
+Both references and regular files can be used as data sources in a
+single ~dsq~ source block. ~ob-dsq~ transparently writes the data of each
+reference to a temporary file for ~dsq~ to query.
 
 #+begin_src dsq :input people.json colors countries.org:countries
 SELECT people.name AS name, colors.name AS color, countries.name AS country
@@ -124,9 +161,13 @@ INNER JOIN {2} countries ON  people.id = countries.person_id
 | Bob   | Red   | New Zealand |
 | Bob   | Green | New Zealand |
 
-* Querying data with irregular attributes
+** Querying JSON data with irregular attributes
 
-Note SQLite's [[https://sqlite.org/flextypegood.html][flexible typing]] and how ~null~ and ~false~ values are rendered by default.
+Queried objects in JSON data might contain "irregular" attributes. For
+example, in an array of people objects, one object might specify a ~phone~
+attribute, while another does not. In the query result, all attributes
+found in the queried data will be flattened out and ~null~-ed where
+needed.
 
 #+begin_src dsq :input irregular.json
 SELECT * FROM {}
@@ -138,9 +179,12 @@ SELECT * FROM {}
 | 1.0 | Alice | false      | nil            |
 | 2.0 | Bob   | nil        | 1-123-123-1234 |
 
-The rendering of ~null~ and ~false~ values can be customized.
+** Customizing the rendering of ~null~ and ~false~ values
 
-#+begin_src dsq :input irregular.json :false-value "nope" :null-value "?"
+The rendering of ~null~ and ~false~ values can be customized using the
+~:null-value~ and ~:false-value~ header arguments.
+
+#+begin_src dsq :input irregular.json :null-value "?" :false-value "nope"
 SELECT * FROM {}
 #+end_src
 
@@ -150,9 +194,10 @@ SELECT * FROM {}
 | 1.0 | Alice | nope       | ?              |
 | 2.0 | Bob   | ?          | 1-123-123-1234 |
 
-* Querying results of Org source blocks
+** Querying results of Org source blocks
 
-Because why not?
+Here's an example of a ~dsq~ source block querying the results of an Org
+source block that downloads JSON data from an online API.
 
 #+name: comments
 #+begin_src shell :results verbatim
@@ -167,7 +212,7 @@ FROM {}
 WHERE email LIKE 'f%'
 ORDER BY email
 LIMIT 5
-#+end_src
++end_src
 
 #+RESULTS:
 | email                         | name                            |
