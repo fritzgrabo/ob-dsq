@@ -23,8 +23,20 @@ If you use both MELPA and =use-package=, you can use this, too:
 
 * Screenshot
 
-An SQL query that spans an Org table and a JSON file.
+An SQL query that spans a JSON file and an Org table.
 
 [[screenshots/screenshot.png]]
 
-See the [[examples][examples]] directory for a lot more!
+* Usage
+
+~dsq~ source code blocks use the custom ~:input~ [[https://orgmode.org/manual/Using-Header-Arguments.html][header argument]] to specify
+one or more data sources, then run the SQL query in the source code
+block on them. Besides regular files, ~ob-dsq~ also supports Org tables,
+Org quotes, Org source blocks, etc. as data sources.
+
+The example in the above screenshot shows a ~dsq~ source block that runs a
+simple SQL query spanning a JSON file named ~people.json~ an and Org table
+named ~colors~.
+
+See the [[examples][examples]] directory for a lot more features and customization
+options provided by Org Babel in general and ~ob-dsq~ specifically.
