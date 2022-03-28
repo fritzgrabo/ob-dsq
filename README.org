@@ -10,7 +10,7 @@ this list.
 
 * Installation
 
-Pending: If you use MELPA, an easy way to install this package is via
+If you use MELPA, an easy way to install this package is via
 =package-install=. Alternatively, download =ob-dsq.el=, put it in your
 =load-path= and =require= it.
 
