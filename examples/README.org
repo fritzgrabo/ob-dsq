@@ -193,11 +193,11 @@ needed.
 SELECT * FROM {}
 ,#+end_src
 
-#+RESULTS:
-|  id | name  | newsletter | phone          |
-|-----+-------+------------+----------------|
-| 1.0 | Alice | false      | nil            |
-| 2.0 | Bob   | nil        | 1-123-123-1234 |
+,#+RESULTS:
+| id | name  | newsletter | phone          |
+|----+-------+------------+----------------|
+|  1 | Alice | false      | nil            |
+|  2 | Bob   | nil        | 1-123-123-1234 |
 #+end_src
 
 ** Customizing the rendering of ~null~ and ~false~ values
@@ -210,11 +210,11 @@ The rendering of ~null~ and ~false~ values can be customized using the
 SELECT * FROM {}
 ,#+end_src
 
-#+RESULTS:
-|  id | name  | newsletter | phone          |
-|-----+-------+------------+----------------|
-| 1.0 | Alice | nope       | ?              |
-| 2.0 | Bob   | ?          | 1-123-123-1234 |
+,#+RESULTS:
+| id | name  | newsletter | phone          |
+|----+-------+------------+----------------|
+|  1 | Alice | nope       | ?              |
+|  2 | Bob   | ?          | 1-123-123-1234 |
 #+end_src
 
 ** Querying results of Org source blocks
