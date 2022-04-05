@@ -101,7 +101,7 @@ Otherwise, they'll be deleted when Emacs exits.")
           (setq body processed-body)))
 
       (let* ((body (org-babel-expand-body:dsq body params))
-             (body (org-babel-dsq--escape-quotes body))
+             (body (org-babel-dsq--string-replace "\"" "\\\"" body)) ;; escape quotes in body
              (command (format "%s %s \"%s\"" org-babel-dsq-command file-args body)))
         (when org-babel-dsq-debug
           (message "[dsq] running command: %s" command))
@@ -226,17 +226,17 @@ Otherwise, they'll be deleted when Emacs exits.")
   "Map INPUT to a file name suitable to use as an argument for `dsq`."
   (concat "\"" (expand-file-name (car input)) "\""))
 
-(defun org-babel-dsq--escape-quotes (body)
-  "Escape quotes in BODY.
+(defun org-babel-dsq--string-replace (from to in)
+  "Replace FROM with TO in IN each time it occurs.
 
 Note that Emacs 28 introduces `string-replace'; however, I don't
 want to depend on that version for just a single convenience
-function."
+function, so am back-porting it here."
   (let ((start 0))
-    (while (setq start (string-match "\"" body start))
-      (setq body (replace-match "\\\"" t t body))
-      (setq start (+ 2 start))))
-  body)
+    (while (setq start (string-match from in start))
+      (setq in (replace-match to t t in))
+      (setq start (+ (length to) start))))
+  in)
 
 (add-to-list 'org-src-lang-modes '("dsq" . sql))
 
