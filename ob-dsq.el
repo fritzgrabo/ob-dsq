@@ -107,7 +107,7 @@ Otherwise, they'll be deleted when Emacs exits.")
           (message "[dsq] running command: %s" command))
         (let ((result (or (org-babel-eval command "") "[]")))
           (when org-babel-dsq-debug
-            (message "[dsq] result (first 100 chars): %s" (truncate-string-to-width result 100)))
+            (message "[dsq] result (first 100 chars): %s" (string-trim (truncate-string-to-width result 100))))
           (insert result)))
 
       (when org-babel-dsq-immediately-delete-temp-files
