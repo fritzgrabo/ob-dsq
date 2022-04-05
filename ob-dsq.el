@@ -29,8 +29,9 @@
 
 ;;; Code:
 
-(require 'subr-x)
 (require 'mule-util)
+(require 'seq)
+(require 'subr-x)
 
 (require 'ob)
 (require 'ob-sql)
@@ -80,10 +81,61 @@ Otherwise, they'll be deleted when Emacs exits.")
 (defvar org-babel-dsq-debug nil
   "If non-nil, print debug messages.")
 
+(defvar org-babel-dsq-preprocess-vars-functions
+  '(org-babel-dsq-preprocess-vars)
+  "List of functions to call to preprocess vars before expansion of the body.
+
+Each function is expected to take a list of vars as an argument,
+and to return a copy of the vars that were further preprocessed
+for expansion of the body.")
+
 (defun org-babel-expand-body:dsq (body params)
   "Expand the query in BODY using PARAMS."
-  (org-babel-sql-expand-vars
-   body (org-babel--get-vars params)))
+  (let* ((vars
+          (org-babel--get-vars params))
+         (preprocessed-vars
+          (seq-reduce
+           (lambda (vars f) (funcall f vars))
+           org-babel-dsq-preprocess-vars-functions
+           vars)))
+    (when org-babel-dsq-debug
+      (message "[dsq] preprocessed vars: %S -> %S" vars preprocessed-vars))
+    (org-babel-sql-expand-vars body preprocessed-vars)))
+
+(defun org-babel-dsq-preprocess-vars (vars)
+  "Preprocess VARS before expansion of the body."
+  (mapcar #'org-babel-dsq--preprocess-var vars))
+
+(defun org-babel-dsq--preprocess-var (var)
+  "Preprocess a single VAR before expansion of the body."
+  (let ((var-value (cdr var)))
+    (cons
+     (car var)
+     (if (listp var-value)
+         (string-join
+          (mapcar
+           (lambda (it)
+             (org-babel-dsq--var-value-as-joinable-string
+              (org-babel-dsq--preprocess-var-value it)))
+           var-value)
+          ",")
+       (org-babel-dsq--preprocess-var-value var-value)))))
+
+(defun org-babel-dsq--preprocess-var-value (value)
+  "Preprocess a single var's VALUE before expansion of the body."
+  (cond
+   ((stringp value) (string-trim value)) ;; trim trailing newlines in source block results
+   ((numberp value) value)
+   ((listp value) (org-babel-dsq--preprocess-var-value (car value)))
+   (t (org-babel-dsq--preprocess-var-value (format "%S" value)))))
+
+(defun org-babel-dsq--var-value-as-joinable-string (value)
+  "Format VALUE to be joined into a list with other variable values."
+  (if (stringp value)
+      (if (and (string-prefix-p "'" value) (string-suffix-p "'" value))
+          value ;; quoted string, nothing to do
+        (format "'%s'" value)) ;; quote string
+    (format "%s" value)))
 
 (defun org-babel-execute:dsq (body params)
   "Execute the query in BODY using PARAMS."

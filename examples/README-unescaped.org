@@ -11,26 +11,11 @@ SELECT * FROM {}
 #+end_src
 
 #+RESULTS:
-| id | name  |
-|----+-------|
-|  1 | Alice |
-|  2 | Bob   |
-
-** Variable expansion
-
-[[https://orgmode.org/manual/Environment-of-a-Code-Block.html][Arguments]] can be passed to the source code block via ~:var FOO=BAR~ as
-usual. ~dsq~ source code blocks replace occurrences of ~$FOO~ with ~BAR~
-before its evaluation. For now, only literal values may be assigned to
-variables.
-
-#+begin_src dsq :input people.json :var name="Alice"
-SELECT * FROM {} WHERE name = '$name'
-#+end_src
-
-#+RESULTS:
-| id | name  |
-|----+-------|
-|  1 | Alice |
+| id | name    |
+|----+---------|
+|  1 | Alice   |
+|  2 | Bob     |
+|  3 | Charles |
 
 ** ~:header~ and ~:hlines~ header arguments
 
@@ -43,9 +28,9 @@ SELECT * FROM {}
 #+end_src
 
 #+RESULTS:
-| 1 | Alice |
-| 2 | Bob   |
-#+end_src
+| 1 | Alice   |
+| 2 | Bob     |
+| 3 | Charles |
 
 Use ~:hlines yes~ to include horizontal lines between rows in table
 results. Use any other value to render the result without horizontal
@@ -56,11 +41,13 @@ SELECT * FROM {}
 #+end_src
 
 #+RESULTS:
-| id | name  |
-|----+-------|
-|  1 | Alice |
-|----+-------|
-|  2 | Bob   |
+| id | name    |
+|----+---------|
+|  1 | Alice   |
+|----+---------|
+|  2 | Bob     |
+|----+---------|
+|  3 | Charles |
 
 ** Result types and formats
 
@@ -76,6 +63,7 @@ SELECT * FROM {}
 - ("id" "name")
 - (1 "Alice")
 - (2 "Bob")
+- (3 "Charles")
 
 #+begin_src dsq :input people.json :results verbatim code
 SELECT * FROM {}
@@ -84,7 +72,8 @@ SELECT * FROM {}
 #+RESULTS:
 #+begin_src dsq
 [{"id":1,"name":"Alice"},
-{"id":2,"name":"Bob"}]
+{"id":2,"name":"Bob"},
+{"id":3,"name":"Charles"}]
 #+end_src
 
 ** Querying multiple sources (files, with varying data types)
@@ -212,7 +201,7 @@ FROM {}
 WHERE email LIKE 'f%'
 ORDER BY email
 LIMIT 5
-+end_src
+#+end_src
 
 #+RESULTS:
 | email                         | name                            |
@@ -222,3 +211,106 @@ LIMIT 5
 | Felton_Huel@terrell.biz       | ratione architecto in est volup |
 | Ferne_Bogan@angus.info        | dicta deserunt tempore          |
 | Francesco.Gleason@nella.us    | doloribus quibusdam molestiae a |
+
+** Variable expansion
+
+[[https://orgmode.org/manual/Environment-of-a-Code-Block.html][Arguments]] can be passed to the source code block via ~:var FOO=BAR~ as
+usual. ~dsq~ source code blocks replace occurrences of ~$FOO~ with ~BAR~
+before its evaluation.
+
+Note that ~BAR~ can be a literal value or an Org reference.
+
+Quoting and list concatenation might happen based on the type of ~BAR~'s
+value. Please see below for details.
+
+*** Simple literal values
+
+Passing in a literal string value.
+
+Note how the value ~Alice~ needs to be quoted manually in the query if
+it's used as a string value there: ~ob-dsq~ doesn't assume that passed in
+values are used as values in the query. In fact, you could use variable
+expansion to pass in whole query clauses, subqueries, etc.
+
+#+begin_src dsq :input people.json :var name='Alice'
+SELECT * FROM {} WHERE name = '$name'
+#+end_src
+
+#+RESULTS:
+| id | name  |
+|----+-------|
+|  1 | Alice |
+
+Passing in a literal number value.
+
+#+begin_src dsq :input people.json :var id=2
+SELECT * FROM {} WHERE id = $id
+#+end_src
+
+#+RESULTS:
+| id | name |
+|----+------|
+|  2 | Bob  |
+
+*** Org source blocks with literal values
+
+Passing in the result of a source block that produces a literal value.
+
+#+name: generate-name
+#+begin_src ruby
+'B' + 'o' + 'b'
+#+end_src
+
+#+begin_src dsq :input people.json :var name=generate-name
+SELECT * FROM {} WHERE name = '$name'
+#+end_src
+
+#+RESULTS:
+| id | name |
+|----+------|
+|  2 | Bob  |
+
+*** Org lists
+
+Passing in a list.
+
+Note how the values are quoted and joined with commas. In contrast to
+passing in a literal value (see above), ~ob-dsq~ /does/ assume that a passed
+in list is used as a list value in the query.
+
+#+name: players
+- Alice
+- Bob
+
+#+begin_src dsq :input people.json :var names=players
+SELECT * FROM {} WHERE name in ($names)
+#+end_src
+
+#+RESULTS:
+| id | name  |
+|----+-------|
+|  1 | Alice |
+|  2 | Bob   |
+
+*** Org tables
+
+Passing in a table.
+
+~ob-dsq~ extracts the first column of the table and treats it as a list.
+Rules for lists apply here as well.
+
+#+name: scores
+| player  | score |
+|---------+-------|
+| Alice   |   100 |
+| Charles |    20 |
+
+#+begin_src dsq :input people.json :var names=scores
+SELECT * FROM {} WHERE name in ($names)
+#+end_src
+
+#+RESULTS:
+| id | name    |
+|----+---------|
+|  1 | Alice   |
+|  3 | Charles |
