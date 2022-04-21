@@ -42,13 +42,15 @@
   '((:input . :any)
     (:header . :any)
     (:null-value . :any)
-    (:false-value . :any))
+    (:false-value . :any)
+    (:cache . :any))
   "Additional header arguments specific to evaluating a query.")
 
 (defvar org-babel-default-header-args:dsq
   '((:header . "yes")
     (:null-value . nil)
     (:false-value . "false")
+    (:cache . nil)
     (:results . "table"))
   "Default header arguments for evaluating a query.")
 
@@ -142,19 +144,26 @@ for expansion of the body.")
   (let* ((params (org-babel-process-params params))
          (null-value-param (cdr (assq :null-value params)))
          (false-value-param (cdr (assq :false-value params)))
+         (cache-param (cdr (assq :cache params)))
          (result-params (split-string (or (cdr (assq :results params)) "")))
          (input-params (org-babel-dsq--get-inputs params))
-         (inputs (mapcar #'org-babel-dsq--process-input-param input-params))) ;; (path . (list of flags))
+         (inputs (mapcar #'org-babel-dsq--process-input-param input-params)) ;; (path . (list of file flags))
+         (flags nil))
+
+    (when (equal "yes" cache-param)
+      (push "-C" flags))
 
     (with-temp-buffer
       (let ((processed-body (run-hook-with-args-until-success 'org-babel-dsq-pre-execute-hook body params)))
         (when processed-body
           (setq body processed-body)))
 
-      (let* ((file-args (mapconcat #'org-babel-dsq--file-arg-from-input inputs " "))
-             (body (org-babel-expand-body:dsq body params))
+      (let* ((flags (string-join flags " "))
+             (file-args (mapconcat #'org-babel-dsq--file-arg-from-input inputs " "))
+             (body (org-babel-expand-body:dsq body params)) ;; expand body
              (body (org-babel-dsq--string-replace "\"" "\\\"" body)) ;; escape quotes in body
-             (command (format "%s %s \"%s\"" org-babel-dsq-command file-args body)))
+             (body (concat "\"" body "\"")) ;; quote body
+             (command (string-join (list org-babel-dsq-command flags file-args body) " ")))
         (when org-babel-dsq-debug
           (message "[dsq] running command: %s" command))
         (let ((result (or (org-babel-eval command "") "[]")))
