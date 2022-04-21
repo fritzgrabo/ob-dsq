@@ -76,7 +76,7 @@ Example: `:input employees%json` uses data from the `employee`
 Org reference's output and treats it as JSON.")
 
 (defvar org-babel-dsq-immediately-delete-temp-files t
-  "If non-nil, delete temporary data files right after evaluating the query.
+  "If non-nil, delete temporary Org data files after running the query.
 
 Otherwise, they'll be deleted when Emacs exits.")
 
