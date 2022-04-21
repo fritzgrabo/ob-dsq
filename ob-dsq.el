@@ -144,15 +144,15 @@ for expansion of the body.")
          (false-value-param (cdr (assq :false-value params)))
          (result-params (split-string (or (cdr (assq :results params)) "")))
          (input-params (org-babel-dsq--get-inputs params))
-         (inputs (mapcar #'org-babel-dsq--process-input-param input-params)) ;; (path . (list of flags))
-         (file-args (mapconcat #'org-babel-dsq--file-arg-from-input inputs " ")))
+         (inputs (mapcar #'org-babel-dsq--process-input-param input-params))) ;; (path . (list of flags))
 
     (with-temp-buffer
       (let ((processed-body (run-hook-with-args-until-success 'org-babel-dsq-pre-execute-hook body params)))
         (when processed-body
           (setq body processed-body)))
 
-      (let* ((body (org-babel-expand-body:dsq body params))
+      (let* ((file-args (mapconcat #'org-babel-dsq--file-arg-from-input inputs " "))
+             (body (org-babel-expand-body:dsq body params))
              (body (org-babel-dsq--string-replace "\"" "\\\"" body)) ;; escape quotes in body
              (command (format "%s %s \"%s\"" org-babel-dsq-command file-args body)))
         (when org-babel-dsq-debug
