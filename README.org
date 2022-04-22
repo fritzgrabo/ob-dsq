@@ -48,9 +48,10 @@ as specifying the result's type and formatting, the various options for
 passing variables into the query, querying results of an Org source
 block, and more!
 
-- ~:input~ -- the list of data sources to query. A data source can be a
-  filename or the name of an Org reference that builds tabular or list
-  data (an Org table, an Org source block, etc.).
+- ~:input~ -- the list of data sources to query. A data source can be [[examples/README.org#getting-started][a
+  filename]], the [[examples/README.org#querying-org-references-in-local-or-other-files][name of an Org reference]] that builds tabular or list
+  data (an Org table, an Org source block, etc.), or [[examples/README.org#querying-results-of-elisp-forms][an Elisp form]] that
+  generates any of the above or the data to query directly.
 
 - ~:cache~ -- set to ~yes~ to enable ~dsq~'s [[https://github.com/multiprocessio/dsq#caching][caching feature]].
 

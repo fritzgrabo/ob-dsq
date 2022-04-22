@@ -120,6 +120,126 @@ LIMIT 5
 | Ferne_Bogan@angus.info        | dicta deserunt tempore          |
 | Francesco.Gleason@nella.us    | doloribus quibusdam molestiae a |
 
+** Querying results of Elisp forms
+
+This is where it get's a little meta: it's possible to pass Elisp forms
+to the ~:input~ header argument, as long as they evaluate to a either a
+single value that is a valid ~:input~ header argument, or a list of
+values, each of which is either a valid ~:input~ header argument or
+tabular data (that is, a list of lists).
+
+Let's unpack this step by step.
+
+*** Single data source
+
+Here's an example that queries the ~colors~ Org table from above:
+
+#+begin_src dsq :input (concat "col" "ors")
+SELECT name FROM {}
+#+end_src
+
+#+RESULTS:
+| name  |
+|-------|
+| Blue  |
+| Red   |
+| Green |
+
+*** List of data sources
+
+Here's an Elisp form that evaluates to a list of data sources to query:
+
+#+begin_src dsq :input `("people.json" ,(concat "col" "ors"))
+SELECT people.name AS name, colors.name AS color
+FROM {0} people
+INNER JOIN {1} colors ON  people.id = colors.person_id
+#+end_src
+
+#+RESULTS:
+| name  | color |
+|-------+-------|
+| Alice | Blue  |
+| Bob   | Red   |
+| Bob   | Green |
+
+*** Mixed list of data sources and tabular data
+
+It's also possible to either define tabular data to query or to call
+functions that generate such data on the fly. Consider this a shortcut
+to referencing an Org source block that defines or generates data.
+
+Note that for this to work, the tabular data needs to be an element of a
+wrapping list; it can't be passed in as a ~:input~ header argument
+directly, because the individual "rows" would be considered one data
+source each, like in the examples above.
+
+Here's what that would look like for tabular data defined inline:
+
+#+begin_src dsq :input '("people.json" (("person_id" "name") (1 "Blue") (2 "Red") (2 "Green")))
+SELECT people.name AS name, colors.name AS color
+FROM {0} people
+INNER JOIN {1} colors ON  people.id = colors.person_id
+#+end_src
+
+#+RESULTS:
+| name  | color |
+|-------+-------|
+| Alice | Blue  |
+| Bob   | Red   |
+| Bob   | Green |
+
+*** Dynamically generated tabular data
+
+And finally, let's do an example that calls a function to generate the
+data to query on the fly.
+
+Assume you have defined a simple ~org-extract~ function which uses the
+fabulous [[https://github.com/alphapapa/org-ql][org-ql package]] to [[https://github.com/alphapapa/org-ql#function-org-ql-select][fetch headlines from Org files]] for an org-ql
+query and continues to extract their meta-data and custom properties as
+tabular data:
+
+#+begin_src elisp
+(defun org-extract (files &optional query)
+  "Extract meta-data and custom properties for headings in FILES matching QUERY."
+  (let ((headlines (org-ql-select files query))
+        keywords)
+    ;; collect unique property keywords
+    (mapcar (lambda (headline)
+              (cl-loop for (keyword . _value) on (cadr headline) by #'cddr
+                       unless (member keyword keywords)
+                       do (push keyword keywords)))
+            headlines)
+    (cons
+     ;; header row: normalized column names
+     (mapcar (lambda (keyword)
+               (substring (downcase (symbol-name keyword)) 1))
+             keywords)
+     ;; data rows
+     (mapcar (lambda (headline)
+               (mapcar (lambda (keyword)
+                         (let ((value (plist-get (cadr headline) keyword)))
+                           (if (or (stringp value) (numberp value))
+                               value
+                             (format "%s" value))))
+                       keywords))
+             headlines))))
+#+end_src
+
+Let's sum up story points of tickets that are still "ready" to be worked
+on in this week's ~sprint.org~ ([[https://raw.githubusercontent.com/fritzgrabo/ob-dsq/main/examples/sprint.org][raw view]]) by assignee and component to
+find out if we'd better reassess the ticket distribution among the team:
+
+#+begin_src dsq :input `(,(org-extract "sprint.org" '(todo "READY")))
+SELECT assignee, component, SUM("story-points") AS points FROM {} GROUP BY assignee, component
+#+end_src
+
+#+RESULTS:
+| assignee | component | points |
+|----------+-----------+--------|
+| Fritz    | Backend   |      5 |
+| Fritz    | Frontend  |      2 |
+| Rainer   | Frontend  |      1 |
+
 ** Querying JSON data with irregular attributes
 
 Queried objects in JSON data might contain "irregular" attributes. For

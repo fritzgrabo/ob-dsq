@@ -251,34 +251,40 @@ for expansion of the body.")
     (let* ((input-param (if (symbolp input-param) (symbol-name input-param) input-param))
            (reference (split-string input-param org-babel-dsq-format-separator)))
       (cons (org-babel-dsq--reference-to-temp-file (car reference) (cadr reference)) (list 'temp-file))))
+   ((listp input-param)
+    (cons (org-babel-dsq--write-temp-file (orgtbl-to-csv input-param nil) "csv") (list 'temp-file)))
    (t (error "Don't know how to handle input %s: file or reference expected" input-param))))
 
 (defun org-babel-dsq--reference-to-temp-file (reference fmt)
   "Resolve Org REFERENCE and write it to a temporary FMT file."
-  (let ((content (org-babel-ref-resolve reference)))
-    (unless content
-      (error "Resolving input reference %s yielded no content" reference))
+  (let ((data (org-babel-ref-resolve reference)))
+    (unless data
+      (error "Resolving input reference %s yielded no data" reference))
 
-    (when (listp content)
+    (when (listp data)
       (if (not (or (null fmt) (string= fmt "csv")))
           (error "Tabular/list data in input reference %s requires csv format, but %s requested" reference fmt)
         (setq fmt "csv")
-        (setq content (orgtbl-to-csv content nil))))
+        (setq data (orgtbl-to-csv data nil))))
 
-    (when (and (null fmt) (stringp content))
-      (setq fmt (org-babel-dsq--detect-format-from-content-fragment
-                 (substring content 0 (min 1000 (length content))))))
+    (when (and (null fmt) (stringp data))
+      (setq fmt (org-babel-dsq--detect-format-from-data-fragment
+                 (substring data 0 (min 1000 (length data))))))
 
     (when (null fmt)
       (error "Cannot defer format for input reference %s; use '%s:<format>'" reference reference))
 
-    (let ((temp-file (org-babel-temp-file "dsq-" (concat "." fmt))))
-      (with-temp-file temp-file
-        (insert content))
-      temp-file)))
+    (org-babel-dsq--write-temp-file data fmt)))
 
-(defun org-babel-dsq--detect-format-from-content-fragment (fragment)
-  "Detect format of content FRAGMENT."
+(defun org-babel-dsq--write-temp-file (data fmt)
+  "Write DATA to a temporary FMT file."
+  (let ((temp-file (org-babel-temp-file "dsq-" (concat "." fmt))))
+    (with-temp-file temp-file
+      (insert data))
+    temp-file))
+
+(defun org-babel-dsq--detect-format-from-data-fragment (fragment)
+  "Detect format of data FRAGMENT."
   (cond
    ((string-match "\\`\\(^[[:space:]]*\\(#.*\\)?\n\\)*[[:space:]]*[{\\[]" fragment) "json")
    ((string-match "\\`\\(^[[:space:]]*\n\\)*[^\n]*," fragment) "csv")))

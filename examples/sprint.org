@@ -1,0 +1,55 @@
+# -*- bug-reference-bug-regexp: "\\b\\(\\(EX-[0-9]+\\)\\)"; bug-reference-url-format: "https://example.com/tickets/%s"; -*-
+
+#+startup: showeverything
+#+todo: READY PROGRESS REVIEW QA PAUSED | DONE CANCELLED
+
+* Tickets
+** READY [#C] EX-1234 Fix typo in logout message
+:PROPERTIES:
+:Assignee: Rainer
+:Story-Points: 1
+:Component: Frontend
+:END:
+
+The logout screen says "locked out" instead of "logged out".
+
+** DONE [#A] EX-1255 Add index on ~upc~ column to ~products~ table
+:PROPERTIES:
+:Assignee: Rainer
+:Story-Points: 2
+:Component: Backend
+:END:
+
+Querying products by UPC is really slow.
+Let's add an index on that column.
+
+** REVIEW [#A] EX-1212 Refactor authentication logic for readability
+:PROPERTIES:
+:Assignee: Fritz
+:Story-Points: 2
+:Component: Backend
+:END:
+
+Authentication code was done in a hurry.
+Let's take some time to clean this up.
+
+** READY [#B] EX-1132 CSV download of queried products
+:PROPERTIES:
+:Assignee: Fritz
+:Story-Points: 2
+:Component: Frontend
+:END:
+
+On the product query result view, allow for downloading the unpaginated list of results as a CSV file.
+See EX-1133 for the Backend part of this.
+
+** READY [#B] EX-1133 Add support for CSV format in product list API endpoint
+:PROPERTIES:
+:Assignee: Fritz
+:Story-Points: 5
+:Component: Backend
+:END:
+
+Use the ~Content-Disposition: attachment; filename="..."~ HTTP header to suggest a file name.
+The file name should be the current date and time in UTC in an ISO8601-compatible format.
+See EX-1132 for how this is going to be called from the Frontend.
