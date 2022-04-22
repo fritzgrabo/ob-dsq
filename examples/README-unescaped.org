@@ -17,65 +17,6 @@ SELECT * FROM {}
 |  2 | Bob     |
 |  3 | Charles |
 
-** ~:header~ and ~:hlines~ header arguments
-
-Use ~:header yes~ (default) to include a header row in table results. Use
-any other value to render the result without a header. This can be
-useful for result types other than ~table~ (see below for other options).
-
-#+begin_src dsq :input people.json :header no
-SELECT * FROM {}
-#+end_src
-
-#+RESULTS:
-| 1 | Alice   |
-| 2 | Bob     |
-| 3 | Charles |
-
-Use ~:hlines yes~ to include horizontal lines between rows in table
-results. Use any other value to render the result without horizontal
-rows (default).
-
-#+begin_src dsq :input people.json :hlines yes
-SELECT * FROM {}
-#+end_src
-
-#+RESULTS:
-| id | name    |
-|----+---------|
-|  1 | Alice   |
-|----+---------|
-|  2 | Bob     |
-|----+---------|
-|  3 | Charles |
-
-** Result types and formats
-
-Org supports [[https://orgmode.org/manual/Results-of-Evaluation.html][a wide range of options]] to customize the formatting of the
-results of a source code block execution. Here are two quick examples;
-please see the docs for more details.
-
-#+begin_src dsq :input people.json :results list
-SELECT * FROM {}
-#+end_src
-
-#+RESULTS:
-- ("id" "name")
-- (1 "Alice")
-- (2 "Bob")
-- (3 "Charles")
-
-#+begin_src dsq :input people.json :results verbatim code
-SELECT * FROM {}
-#+end_src
-
-#+RESULTS:
-#+begin_src dsq
-[{"id":1,"name":"Alice"},
-{"id":2,"name":"Bob"},
-{"id":3,"name":"Charles"}]
-#+end_src
-
 ** Querying multiple sources (files, with varying data types)
 
 The ~:input~ header argument accepts one or more data sources. Here's an
@@ -150,39 +91,6 @@ INNER JOIN {2} countries ON  people.id = countries.person_id
 | Bob   | Red   | New Zealand |
 | Bob   | Green | New Zealand |
 
-** Querying JSON data with irregular attributes
-
-Queried objects in JSON data might contain "irregular" attributes. For
-example, in an array of people objects, one object might specify a ~phone~
-attribute, while another does not. In the query result, all attributes
-found in the queried data will be flattened out and ~null~-ed where
-needed.
-
-#+begin_src dsq :input irregular.json
-SELECT * FROM {}
-#+end_src
-
-#+RESULTS:
-| id | name  | newsletter | phone          |
-|----+-------+------------+----------------|
-|  1 | Alice | false      | nil            |
-|  2 | Bob   | nil        | 1-123-123-1234 |
-
-** Customizing the rendering of ~null~ and ~false~ values
-
-The rendering of ~null~ and ~false~ values can be customized using the
-~:null-value~ and ~:false-value~ header arguments.
-
-#+begin_src dsq :input irregular.json :null-value "?" :false-value "nope"
-SELECT * FROM {}
-#+end_src
-
-#+RESULTS:
-| id | name  | newsletter | phone          |
-|----+-------+------------+----------------|
-|  1 | Alice | nope       | ?              |
-|  2 | Bob   | ?          | 1-123-123-1234 |
-
 ** Querying results of Org source blocks
 
 Here's an example of a ~dsq~ source block querying the results of an Org
@@ -211,6 +119,98 @@ LIMIT 5
 | Felton_Huel@terrell.biz       | ratione architecto in est volup |
 | Ferne_Bogan@angus.info        | dicta deserunt tempore          |
 | Francesco.Gleason@nella.us    | doloribus quibusdam molestiae a |
+
+** Querying JSON data with irregular attributes
+
+Queried objects in JSON data might contain "irregular" attributes. For
+example, in an array of people objects, one object might specify a ~phone~
+attribute, while another does not. In the query result, all attributes
+found in the queried data will be flattened out and ~null~-ed where
+needed.
+
+#+begin_src dsq :input irregular.json
+SELECT * FROM {}
+#+end_src
+
+#+RESULTS:
+| id | name  | newsletter | phone          |
+|----+-------+------------+----------------|
+|  1 | Alice | false      | nil            |
+|  2 | Bob   | nil        | 1-123-123-1234 |
+
+** Result types and formats
+
+Org supports [[https://orgmode.org/manual/Results-of-Evaluation.html][a wide range of options]] to customize the formatting of the
+results of a source code block execution. Here are two quick examples;
+please see the docs for more details.
+
+#+begin_src dsq :input people.json :results list
+SELECT * FROM {}
+#+end_src
+
+#+RESULTS:
+- ("id" "name")
+- (1 "Alice")
+- (2 "Bob")
+- (3 "Charles")
+
+#+begin_src dsq :input people.json :results verbatim code
+SELECT * FROM {}
+#+end_src
+
+#+RESULTS:
+#+begin_src dsq
+[{"id":1,"name":"Alice"},
+{"id":2,"name":"Bob"},
+{"id":3,"name":"Charles"}]
+#+end_src
+
+** ~:header~ and ~:hlines~ header arguments
+
+Use ~:header yes~ (default) to include a header row in table results. Use
+any other value to render the result without a header. This can be
+useful for result types other than ~table~ (see below for other options).
+
+#+begin_src dsq :input people.json :header no
+SELECT * FROM {}
+#+end_src
+
+#+RESULTS:
+| 1 | Alice   |
+| 2 | Bob     |
+| 3 | Charles |
+
+Use ~:hlines yes~ to include horizontal lines between rows in table
+results. Use any other value to render the result without horizontal
+rows (default).
+
+#+begin_src dsq :input people.json :hlines yes
+SELECT * FROM {}
+#+end_src
+
+#+RESULTS:
+| id | name    |
+|----+---------|
+|  1 | Alice   |
+|----+---------|
+|  2 | Bob     |
+|----+---------|
+|  3 | Charles |
+
+** Customizing the rendering of ~null~ and ~false~ values
+
+The rendering of ~null~ and ~false~ values can be customized using the
+~:null-value~ and ~:false-value~ header arguments.
+
+#+begin_src dsq :input irregular.json :null-value "?" :false-value "nope"
+SELECT * FROM {}
+#+end_src
+
+#+RESULTS:
+| id | name  | newsletter | phone          |
+|----+-------+------------+----------------|
+|  1 | Alice | nope       | ?              |
+|  2 | Bob   | ?          | 1-123-123-1234 |
 
 ** Variable expansion
 
