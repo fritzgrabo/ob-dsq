@@ -151,7 +151,7 @@ for expansion of the body.")
          (flags nil))
 
     (when (equal "yes" cache-param)
-      (push "-C" flags))
+      (push "--cache" flags))
 
     (with-temp-buffer
       (let ((processed-body (run-hook-with-args-until-success 'org-babel-dsq-pre-execute-hook body params)))
