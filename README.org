@@ -55,6 +55,9 @@ block, and more!
 
 - ~:cache~ -- set to ~yes~ to enable ~dsq~'s [[https://github.com/multiprocessio/dsq#caching][caching feature]].
 
+- ~:convert-numbers~ -- set to ~yes~ (default) to enable ~dsq~'s [[https://github.com/multiprocessio/dsq#converting-numbers-in-csv-and-tsv-files][number
+  conversion feature]].
+
 - ~:header~ -- set to ~yes~ (default) to include header row in table
   results.
 

@@ -43,7 +43,8 @@
     (:header . :any)
     (:null-value . :any)
     (:false-value . :any)
-    (:cache . :any))
+    (:cache . :any)
+    (:convert-numbers . :any))
   "Additional header arguments specific to evaluating a query.")
 
 (defvar org-babel-default-header-args:dsq
@@ -51,6 +52,7 @@
     (:null-value . nil)
     (:false-value . "false")
     (:cache . nil)
+    (:convert-numbers . "yes")
     (:results . "table"))
   "Default header arguments for evaluating a query.")
 
@@ -145,6 +147,7 @@ for expansion of the body.")
          (null-value-param (cdr (assq :null-value params)))
          (false-value-param (cdr (assq :false-value params)))
          (cache-param (cdr (assq :cache params)))
+         (convert-numbers-param (cdr (assq :convert-numbers params)))
          (result-params (split-string (or (cdr (assq :results params)) "")))
          (input-params (org-babel-dsq--get-inputs params))
          (inputs (mapcar #'org-babel-dsq--process-input-param input-params)) ;; (path . (list of file flags))
@@ -152,6 +155,9 @@ for expansion of the body.")
 
     (when (equal "yes" cache-param)
       (push "--cache" flags))
+
+    (when (equal "yes" convert-numbers-param)
+      (push "--convert-numbers" flags))
 
     (with-temp-buffer
       (let ((processed-body (run-hook-with-args-until-success 'org-babel-dsq-pre-execute-hook body params)))
