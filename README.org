@@ -53,10 +53,10 @@ block, and more!
   data (an Org table, an Org source block, etc.), or [[examples/README.org#querying-results-of-elisp-forms][an Elisp form]] that
   generates any of the above or the data to query directly.
 
-- ~:cache~ -- set to ~yes~ to enable ~dsq~'s [[https://github.com/multiprocessio/dsq#caching][caching feature]].
+- ~:cache~ -- set to ~yes~ to enable ~dsq~'s [[https://github.com/multiprocessio/dsq#caching][caching feature]]. Requires ~dsq~ version 0.15.0 or higher.
 
 - ~:convert-numbers~ -- set to ~yes~ (default) to enable ~dsq~'s [[https://github.com/multiprocessio/dsq#converting-numbers-in-csv-and-tsv-files][number
-  conversion feature]].
+  conversion feature]]. Requires ~dsq~ version 0.19.0 or higher.
 
 - ~:header~ -- set to ~yes~ (default) to include header row in table
   results.

@@ -151,13 +151,18 @@ for expansion of the body.")
          (result-params (split-string (or (cdr (assq :results params)) "")))
          (input-params (org-babel-dsq--get-inputs params))
          (inputs (mapcar #'org-babel-dsq--process-input-param input-params)) ;; (path . (list of file flags))
-         (flags nil))
+         (flags nil)
+         (dsq-version (org-babel-dsq--dsq-version)))
 
     (when (equal "yes" cache-param)
-      (push "--cache" flags))
+      (if (org-babel-dsq--dsq-version< dsq-version "0.15.0")
+          (message ":cache requires dsq version \"0.15.0\" or higher; found \"%s\"" dsq-version)
+        (push "--cache" flags)))
 
     (when (equal "yes" convert-numbers-param)
-      (push "--convert-numbers" flags))
+      (if (org-babel-dsq--dsq-version< dsq-version "0.19.0")
+          (message ":convert-numbers requires dsq version \"0.19.0\" or higher; found \"%s\"" dsq-version)
+        (push "--convert-numbers" flags)))
 
     (with-temp-buffer
       (let ((processed-body (run-hook-with-args-until-success 'org-babel-dsq-pre-execute-hook body params)))
@@ -310,6 +315,20 @@ function, so am back-porting it here."
       (setq in (replace-match to t t in))
       (setq start (+ (length to) start))))
   in)
+
+(defun org-babel-dsq--dsq-version ()
+  "Retrieve version of `dsq`."
+  (or
+  (when-let ((dsq-version-string (shell-command-to-string (format "%s --version" org-babel-dsq-command))))
+    (and (string-match "^dsq \\(.*\\)$" dsq-version-string)
+         (match-string 1 dsq-version-string)))
+  (error "Cannot determine version of `dsq`")))
+
+(defun org-babel-dsq--dsq-version< (required-version dsq-version)
+  "Return t if REQUIRED-VERSION is lower (older) than DSQ-VERSION, nil otherwise."
+  (or
+   (string= dsq-version "latest")
+   (version< required-version dsq-version)))
 
 (add-to-list 'org-src-lang-modes '("dsq" . sql))
 
