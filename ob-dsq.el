@@ -320,7 +320,7 @@ function, so am back-porting it here."
   "Retrieve version of `dsq`."
   (or
   (when-let ((dsq-version-string (shell-command-to-string (format "%s --version" org-babel-dsq-command))))
-    (and (string-match "^dsq \\(.*\\)$" dsq-version-string)
+    (and (string-match "^dsq v?\\(.*\\)$" dsq-version-string)
          (match-string 1 dsq-version-string)))
   (error "Cannot determine version of `dsq`")))
 
