@@ -319,10 +319,10 @@ function, so am back-porting it here."
 (defun org-babel-dsq--dsq-version ()
   "Retrieve version of `dsq`."
   (or
-  (when-let ((dsq-version-string (shell-command-to-string (format "%s --version" org-babel-dsq-command))))
-    (and (string-match "^dsq v?\\(.*\\)$" dsq-version-string)
-         (match-string 1 dsq-version-string)))
-  (error "Cannot determine version of `dsq`")))
+   (when-let ((dsq-version-string (shell-command-to-string (format "%s --version" org-babel-dsq-command))))
+     (and (string-match "^dsq v?\\(.*\\)$" dsq-version-string)
+          (match-string 1 dsq-version-string)))
+   (error "Cannot determine version of `dsq`")))
 
 (defun org-babel-dsq--dsq-version< (required-version dsq-version)
   "Return t if REQUIRED-VERSION is lower (older) than DSQ-VERSION, nil otherwise."
